@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    volumes:
+      - ./docroot:/var/www/html
+      - ./docker-utils/php/config/xdebug.ini:/etc/php/7.2/fpm/conf.d/xdebug.ini
+      - ./docker-utils/php/config/xdebug.ini:/etc/php/7.2/cli/conf.d/xdebug.ini
+      - ./docker-utils/php/config/xdebug.ini:/etc/php/7.2/apache2/conf.d/xdebug.ini
+    ports:
+    - "81:80"
+    depends_on:
+      - db
+    container_name: web
+    
+
+  db:
+    image: mysql:5.6
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: changeme
+    container_name: db
+
+  proxy:
+    image: rajivnix/nginx
+    ports:
+    - "80:80"
+    volumes:
+    - ./docker-utils/nginx/conf.d:/etc/nginx/conf.d/
+    depends_on:
+    - web
+    container_name: proxy
+volumes:
+  db-data: {}
